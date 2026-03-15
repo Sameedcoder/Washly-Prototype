@@ -28,19 +28,8 @@ def process_payment_on_completion(event: firestore_fn.Event):
     platform_fee  = round(total * PLATFORM_RATE, 2)
     washer_payout = round(total - platform_fee, 2)
 
-    # The payment was only authorised at booking time — we capture it
-    # (actually charge the card) only now that the job is confirmed done.
-    stripe.PaymentIntent.capture(after["payment"]["stripePaymentIntentId"])
-
-    # Send the washer's cut straight to their connected Stripe account.
-    # transfer_group ties this transfer to the booking for easy reconciliation
-    # in the Stripe dashboard if anything ever needs investigating.
-    stripe.Transfer.create(
-        amount=int(washer_payout * 100),  # Stripe works in cents, not dollars
-        currency="usd",
-        destination=after["washerStripeAccountId"],
-        transfer_group=event.params["booking_id"],
-    )
+   
+    
 
     # Record the final breakdown on the booking document so we have
     # a clean audit trail without having to query Stripe every time.
